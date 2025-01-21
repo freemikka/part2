@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "nodemon src/backend/index.cjs && vite",
+    "start": "node src/backend/index.cjs && vite",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
