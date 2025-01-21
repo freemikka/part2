@@ -3,21 +3,20 @@ import isEqual from 'lodash';
 import Filter from './components/Filter.jsx'
 import PersonForm from './components/PersonForm.jsx';
 import Persons from './components/Persons.jsx'
-import axios from 'axios'
 import phoneBookService from './services/phoneBookService.jsx';
 import Notification from './components/Notification.jsx'
+
 const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
-  const [filteredPersons, setFilteredPersons] = useState([]);
   const [persons, setPersons] = useState([])
   const [changeMessage, setChangeMessage] = useState(null)
-  const [isError, setIsError] = useState()
+  const [isError, setIsError] = useState(false)
 
   const addToPhonebook = (event) => {
     event.preventDefault()
-
+    console.log('something deadedaaede')
     const msg = `${newName} is already in the phonebook, change the number?`
     const duplicatePerson = persons.find(item => item.name === newName)
 
@@ -35,6 +34,7 @@ const App = () => {
             setPersons(persons.map(p => p.id !== duplicatePerson.id ? p : response))
             setNewName('')
             setNewNumber('')
+            setIsError(false)
             setChangeMessage('User is updated')
             setTimeout(() => {
               setChangeMessage(null)
@@ -43,21 +43,18 @@ const App = () => {
           .catch(error => {
             console.log(error)
             setIsError(true)
-            setChangeMessage('Problem with the error')
+            setChangeMessage(error.response.data.error)
             setTimeout(() => {
               setChangeMessage(null)
                 }, 5000)
           })
       }
     } else {
-
-    const newObject = {id: String(persons.length + 1), name: newName, number: newNumber}
+    const newObject = {name: newName, number: newNumber}
     phoneBookService
       .create(newObject)
       .then(response => {
-        console.log('response', response)
         setPersons(persons.concat(response))
-        setFilteredPersons(filteredPersons.concat({name: newName, number: newNumber}))
         setNewName('')
         setNewNumber('')
         setChangeMessage('User is added')
@@ -68,8 +65,8 @@ const App = () => {
       .catch(error => {
         console.log(error)
         setIsError(true)
-        setChangeMessage('Problem with the error')
-        setTimeout(() => {
+        setChangeMessage(error.response.data.error)
+        setTimeout(() => { 
           setChangeMessage(null)
             }, 5000)
       })
@@ -88,12 +85,16 @@ const App = () => {
   const filterPhoneBook = (event) => {
     const filterValue = event.target.value;
     setNewFilter(event.target.value)
-    console.log(newFilter)
-    if (event.target.value !== '') {
+    if (newFilter !== '') {
       setPersons(persons.filter(person => person.name.toLowerCase().includes(filterValue.toLowerCase())))
     }
     else {
-      setPersons(persons)
+      console.log(response)
+      phoneBookService
+        .getAll()
+        .then(response => {
+          setPersons(response)
+        })
     }
   }
 
@@ -121,7 +122,7 @@ const App = () => {
         console.error('Error deleting person:', error);
         console.log(error)
         setIsError(true)
-        setChangeMessage('Problem with the error')
+        setChangeMessage(error.response.data.error)
         setTimeout(() => {
           setChangeMessage(null)
             }, 5000)
